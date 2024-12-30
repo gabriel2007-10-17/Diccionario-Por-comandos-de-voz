@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-6 text-blue-600">Diccionario Técnico Bilingüe</h1>
+        <form action="/add" method="POST" class="mb-4">
+            <input type="text" name="word" placeholder="Nueva palabra" required class="border rounded w-full p-2 mb-2">
+            <textarea name="definition" placeholder="Definición" required class="border rounded w-full p-2 mb-2"></textarea>
+            <select name="language" class="border rounded w-full p-2 mb-2">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+            </select>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Agregar Palabra</button>
+        </form>
+        <input type="text" id="search" placeholder="Buscar palabra..." class="border rounded w-full p-2 mb-4" oninput="searchWords()">
+        <script>
+            function searchWords() {
+                const searchTerm = document.getElementById('search').value;
+                window.location.href = `/?search=${searchTerm}&language=${document.getElementById('language').value}`;
+            }
+        </script>
+        <ul class="list-disc pl-5">
+            {% for word in words %}
+                <li class="flex justify-between items-center">
+                    <span>{{ word.word }}: {{ word.definition }}</span>
+                    <a href="/delete/{{ word.id }}" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
+</html>
