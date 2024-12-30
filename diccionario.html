@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diccionario Multilenguaje</title>
+    
+    <!-- React Libraries -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const generateBaseDictionary = (language) => {
+            const spanishWords = [
+                { word: "abandonar", definition: "Dejar completamente algo o a alguien." },
+                { word: "habilidad", definition: "Capacidad de hacer algo correctamente." },
+                { word: "amor", definition: "Sentimiento de afecto, inclinación y entrega." },
+            ];
+
+            const englishWords = [
+                { word: "abandon", definition: "To leave completely and finally; forsake." },
+                { word: "ability", definition: "Possession of the qualities required to do something." },
+                { word: "love", definition: "An intense feeling of deep affection." },
+            ];
+
+            const baseWordSet = language === 'es' ? spanishWords : englishWords;
+            return [...baseWordSet];
+        };
+
+        const DictionaryApp = () => {
+            const [word, setWord] = useState('');
+            const [definition, setDefinition] = useState('');
+            const [dictionary, setDictionary] = useState([]);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [language, setLanguage] = useState('es');
+
+            useEffect(() => {
+                const savedDictionary = localStorage.getItem(`dictionary_${language}`);
+                if (savedDictionary) {
+                    setDictionary(JSON.parse(savedDictionary));
+                } else {
+                    const baseDictionary = generateBaseDictionary(language);
+                    setDictionary(baseDictionary);
+                    localStorage.setItem(`dictionary_${language}`, JSON.stringify(baseDictionary));
+                }
+            }, [language]);
+
+            const addWord = () => {
+                if (!word.trim() || !definition.trim()) {
+                    alert(language === 'es' ? 'Por favor ingrese una palabra y su definición' : 'Please enter both word and definition');
+                    return;
+                }
+
+                const existingWord = dictionary.find(entry => entry.word.toLowerCase() === word.toLowerCase());
+                if (existingWord) {
+                    alert(language === 'es' ? 'Esta palabra ya existe en el diccionario' : 'This word already exists in the dictionary');
+                    return;
+                }
+
+                const newEntry = { word: word.trim(), definition: definition.trim(), id: Date.now() };
+                const updatedDictionary = [...dictionary, newEntry];
+                setDictionary(updatedDictionary);
+                localStorage.setItem(`dictionary_${language}`, JSON.stringify(updatedDictionary));
+                setWord('');
+                setDefinition('');
+            };
+
+            const deleteWord = (id) => {
+                const updatedDictionary = dictionary.filter(entry => entry.id !== id);
+                setDictionary(updatedDictionary);
+                localStorage.setItem(`dictionary_${language}`, JSON.stringify(updatedDictionary));
+            };
+
+            const filteredDictionary = dictionary.filter(entry => 
+                entry.word.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            return (
+                <div className="container mx-auto px-4 py-8">
+                    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6">
+                        <h1 className="text-3xl font-bold text-center mb-6 text-blue-600">
+                            <i className="fas fa-book-open mr-2"></i>
+                            {language === 'es' ? 'Diccionario Multilenguaje' : 'Multilingual Dictionary'}
+                        </h1>
+
+                        <div className="mb-4 flex justify-center">
+                            <button 
+                                onClick={() => setLanguage('es')}
+                                className={`mr-2 px-4 py-2 rounded ${language === 'es' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                            >
+                                Español
+                            </button>
+                            <button 
+                                onClick={() => setLanguage('en')}
+                                className={`px-4 py-2 rounded ${language === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                            >
+                                English
+                            </button>
+                        </div>
+
+                        <input 
+                            type="text" 
+                            placeholder={language === 'es' ? 'Buscar palabra...' : 'Search word...'} 
+                            className="border rounded w-full p-2 mb-4"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+
+                        <div className="mb-4">
+                            <input 
+                                type="text" 
+                                placeholder={language === 'es' ? 'Nueva palabra' : 'New word'} 
+                                className="border rounded w-full p-2 mb-2"
+                                value={word}
+                                onChange={(e) => setWord(e.target.value)}
+                            />
+                            <textarea 
+                                placeholder={language === 'es' ? 'Definición' : 'Definition'} 
+                                className="border rounded w-full p-2 mb-4"
+                                value={definition}
+                                onChange={(e) => setDefinition(e.target.value)}
+                            />
+                            <button 
+                                onClick={addWord}
+                                className="bg-blue-500 text-white px-4 py-2 rounded"
+                            >
+                                {language === 'es' ? 'Agregar Palabra' : 'Add Word'}
+                            </button>
+                        </div>
+
+                        <ul className="list-disc pl-5">
+                            {filteredDictionary.map(entry => (
+                                <li key={entry.id} className="flex justify-between items-center">
+                                    <span>{entry.word}: {entry.definition}</span>
+                                    <button 
+                                        onClick={() => deleteWord(entry.id)}
+                                        className="text-red-500 hover:text-red-700"
+                                    >
+                                        <i className="fas fa-trash"></i>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<DictionaryApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
