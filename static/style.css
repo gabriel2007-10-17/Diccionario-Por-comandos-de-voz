@@ -1,0 +1,12 @@
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+h1 {
+    font-size: 2rem;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+}
